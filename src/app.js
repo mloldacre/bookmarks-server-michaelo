@@ -4,8 +4,8 @@ const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
 const { NODE_ENV } = require('./config');
-const logger = require('./logger');
 const validateBearerToken = require('./validateBearerToken');
+const bookmarksRouter = require('./bookmarksRouter');
 
 const app = express();
 
@@ -21,11 +21,11 @@ app.use(validateBearerToken);
 
 
 //Routes
-
-
 app.get('/', (request, response) => {
   response.send('Hello, world!');
 });
+
+app.use('/bookmarks', bookmarksRouter);
 
 app.use(function errorHandler(error, req, res, next) {
   let response;
