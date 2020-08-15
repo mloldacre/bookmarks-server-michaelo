@@ -39,7 +39,7 @@ describe('App', () => {
         });
     });
 
-
+    //TODO Finish creating tests, follow CRUD method
     it('GET /bookmarks/:id responds with 200 if bookmark found');
     it('GET /bookmarks/:id responds with 404 if bookmark not found');
     it('POST /bookmarks/ responds with 201 if bookmark created');
