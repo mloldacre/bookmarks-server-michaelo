@@ -19,7 +19,6 @@ app.use(helmet());
 app.use(cors());
 app.use(validateBearerToken);
 
-
 //Routes
 app.get('/', (request, response) => {
   response.send('Hello, world!');

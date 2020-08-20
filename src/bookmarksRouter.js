@@ -3,11 +3,18 @@ const bodyParser = require('express').json();
 const { v4: uuid } = require('uuid');
 const logger = require('./logger');
 const { bookmarks } = require('./bookStore');
+const bookmarksService = require('./bookmarksService');
 
 bookmarksRouter
   .route('/')
-  .get((req, res) => {
-    res.json(bookmarks);
+  .get((req, res, next) => {
+    const knexInstance = req.app.get('db');
+    bookmarksService.getAllBookmarks(knexInstance)
+      .then(bookmarks => {
+        res.json(bookmarks);
+      })
+      .catch(next);
+    
   })
   .post(bodyParser, (req, res) => {
     const { title, url, description, rating } = req.body;
@@ -86,9 +93,9 @@ bookmarksRouter
         .status(404)
         .send('Not Found');
     }
-    
+
     bookmarks.splice(listIndex, 1);
-    
+
     logger.info(`Bookmark with id ${id} deleted.`);
     res
       .status(204)
