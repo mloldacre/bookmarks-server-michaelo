@@ -1,4 +1,4 @@
-describe.only('Temporary spec - top level describe', () => {
+describe.skip('Temporary spec - top level describe', () => {
   before(() => {
     console.log('before #1');
   });
@@ -23,7 +23,7 @@ describe.only('Temporary spec - top level describe', () => {
     console.log('it #5');
   });
 
-  describe('Describe #1', () => {
+  describe.skip('Describe #1', () => {
     before(() => {
       console.log('before #3');
     });
@@ -44,7 +44,7 @@ describe.only('Temporary spec - top level describe', () => {
       console.log('it #2');
     });
 
-    describe('Describe #2', () => {
+    describe.skip('Describe #2', () => {
       before(() => {
         console.log('before #4');
       });
