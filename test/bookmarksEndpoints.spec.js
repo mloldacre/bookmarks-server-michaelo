@@ -4,6 +4,7 @@ const supertest = require('supertest');
 const knex = require('knex');
 const apiToken = process.env.API_TOKEN;
 const { makeBookmarks, testParam, badTestParam } = require('./bookmarks.fixtures');
+const { expect } = require('chai');
 
 
 describe.only('Bookmarks Endpoints', () => {
@@ -59,17 +60,17 @@ describe.only('Bookmarks Endpoints', () => {
     });
 
   });
-  
+
   describe('GET /bookmarks/:id', () => {
     context('Given no bookmarks', () => {
       it('responds with 404', () => {
         return supertest(app)
           .get(`/bookmarks/${badTestParam.id}`)
           .auth(apiToken, { type: 'bearer' })
-          .expect(404, {  error: { message: 'Bookmark doesn\'t exist' } });
+          .expect(404, { error: { message: 'Bookmark doesn\'t exist' } });
       });
     });
-    
+
     context('Given there are bookmarks in the database', () => {
       const testBookmarks = makeBookmarks();
 
@@ -78,58 +79,113 @@ describe.only('Bookmarks Endpoints', () => {
           .into('bookmarks')
           .insert(testBookmarks);
       });
-      
+
       it('GET /bookmarks/:id responds with 404 if bookmark not found', () => {
         return supertest(app)
           .get(`/bookmarks/${badTestParam.id}`)
           .auth(apiToken, { type: 'bearer' })
           .expect(404, { error: { message: 'Bookmark doesn\'t exist' } });
       });
-      
+
       it('GET /bookmarks/:id responds with 200 if bookmark found', () => {
         return supertest(app)
           .get(`/bookmarks/${testParam.id}`)
           .auth(apiToken, { type: 'bearer' })
           .expect(200);
-      }); 
-    });  
+      });
+    });
   });
 
+  describe('POST /bookmarks', () => {
+    it('POST /bookmarks/ responds with 201 and bookmark if created', () => {
 
-
-
-
-
-  /*  
-    it('POST /bookmarks/ responds with 201 if bookmark created', () => {
       return supertest(app)
         .post('/bookmarks')
         .auth(apiToken, { type: 'bearer' })
         .send(testParam)
         .expect(201)
         .expect('Content-Type', /json/)
-        .then(res => {
+        .expect(res => {
           expect(res.body).to.have.all.keys('description', 'id', 'rating', 'title', 'url');
-        });
+          expect(res.body.title).to.eql(testParam.title);
+          expect(res.body.description).to.eql(testParam.description);
+          expect(res.body.url).to.eql(testParam.url);
+          expect(res.body.rating).to.eql(testParam.rating);
+          expect(res.headers.location).to.eql(`/${res.body.id}`);
+        })
+        .then(postRes =>
+          supertest(app)
+            .get(`/bookmarks/${postRes.body.id}`)
+            .auth(apiToken, { type: 'bearer' })
+            .expect(postRes.body)
+        );
     });
-    it('POST /bookmarks/ responds with 400 if "Invalid data"', () => {
-      return supertest(app)
-        .post('/bookmarks')
-        .auth(apiToken, { type: 'bearer' })
-        .send(badTestParam)
-        .expect(400, 'Invalid data');
+
+    const requiredFields = ['title', 'url', 'description', 'rating'];
+    requiredFields.forEach(field => {
+      const { title, url, description, rating } = testParam;
+      const newBookmark = { title, url, description, rating };
+
+      it(`POST /bookmarks/ responds with 400 and message when missing ${field} `, () => {
+        delete newBookmark[field];
+
+        return supertest(app)
+          .post('/bookmarks')
+          .auth(apiToken, { type: 'bearer' })
+          .send(newBookmark)
+          .expect(400, {
+            error: { message: `Missing '${field}' in request body` }
+          });
+      });
+
     });
-    //TODO fix delete test
-    it('DELETE /bookmarks/:id responds with 204 if bookmark successfully deleted', () => {
-      return supertest(app)
-        .delete(`/bookmarks/${testStore[testParam.id]}`)
-        .auth(apiToken, { type: 'bearer' })
-        .expect(204);
+
+
+
+  });
+
+
+  describe('DELETE /bookmarks', () => {
+    context('Given no bookmarks', () => {
+      it('DELETE /bookmarks/:id responds with 404 and message if bookmark is not found', () => {
+        return supertest(app)
+          .delete(`/bookmarks/${badTestParam.id}`)
+          .auth(apiToken, { type: 'bearer' })
+          .expect(404, { error: { message: 'Bookmark doesn\'t exist' } });
+      });
     });
-    it('DELETE /bookmarks/:id responds with 404 and "Not Found" if bookmark is not found', () => {
-      return supertest(app)
-        .delete(`/bookmarks/${badTestParam.id}`)
-        .auth(apiToken, { type: 'bearer' })
-        .expect(404, 'Not Found');
-    }); */
+    context('Given bookmarks are in database', () => {
+      const testDatabase = makeBookmarks();
+
+      beforeEach('insert bookmarks', () => {
+        return db
+          .into('bookmarks')
+          .insert(testDatabase);
+      });
+
+      it('DELETE /bookmarks/:id responds with 204 if bookmark successfully deleted', () => {
+        const expectedBookmarks = testDatabase.filter(bookmark => bookmark.id !== testParam.id);
+        return supertest(app)
+          .delete(`/bookmarks/${testParam.id}`)
+          .auth(apiToken, { type: 'bearer' })
+          .expect(204)
+          .then(res => supertest(app)
+            .get('/bookmarks')
+            .auth(apiToken, { type: 'bearer' })
+            .expect(expectedBookmarks)
+          );
+      });
+      it('DELETE /bookmarks/:id responds with 404 and message if bookmark is not found', () => {
+        return supertest(app)
+          .delete(`/bookmarks/${badTestParam.id}`)
+          .auth(apiToken, { type: 'bearer' })
+          .expect(404, { error: { message: 'Bookmark doesn\'t exist' } });
+      });
+    });
+  });
+
+
+
+  //TODO fix delete test
+
 });

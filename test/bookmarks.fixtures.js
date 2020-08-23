@@ -42,9 +42,9 @@ function makeBookmarks() {
 
 const testParam = {
   'id': 1,
-  'title': 'Thinkful',
-  'url': 'https://www.thinkful.com',
-  'description': 'Think outside the classroom',
+  'title': 'Test new bookmark',
+  'url': 'www.testUrl.com',
+  'description': 'Test new bookmark desc...',
   'rating': 1
 };
 
