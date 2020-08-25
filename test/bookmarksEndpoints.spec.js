@@ -21,11 +21,11 @@ describe.only('Bookmarks Endpoints', () => {
   afterEach('cleanup', () => db('bookmarks').truncate());
 
   //Start tests
-  describe('GET /bookmarks', () => {
+  describe('GET /api/bookmarks', () => {
     context('Given no bookmarks', () => {
       it('responds with 200 and an empty list', () => {
         return supertest(app)
-          .get('/bookmarks')
+          .get('/api/bookmarks')
           .auth(apiToken, { type: 'bearer' })
           .expect(200, []);
       });
@@ -40,16 +40,16 @@ describe.only('Bookmarks Endpoints', () => {
           .insert(testBookmarks);
       });
 
-      it('GET /bookmarks responds with 200 containing bookmarks', () => {
+      it('GET /api/bookmarks responds with 200 containing bookmarks', () => {
         return supertest(app)
-          .get('/bookmarks')
+          .get('/api/bookmarks')
           .auth(apiToken, { type: 'bearer' })
           .expect(200, testBookmarks);
       });
 
-      it('GET /bookmarks responds with 401 when api token isn\'t sent', () => {
+      it('GET /api/bookmarks responds with 401 when api token isn\'t sent', () => {
         return supertest(app)
-          .get('/bookmarks')
+          .get('/api/bookmarks')
           .expect(401)
           .expect('Content-Type', /json/)
           .then(res => {
@@ -61,11 +61,11 @@ describe.only('Bookmarks Endpoints', () => {
 
   });
 
-  describe('GET /bookmarks/:id', () => {
+  describe('GET /api/bookmarks/:id', () => {
     context('Given no bookmarks', () => {
       it('responds with 404', () => {
         return supertest(app)
-          .get(`/bookmarks/${badTestParam.id}`)
+          .get(`/api/bookmarks/${badTestParam.id}`)
           .auth(apiToken, { type: 'bearer' })
           .expect(404, { error: { message: 'Bookmark doesn\'t exist' } });
       });
@@ -80,27 +80,27 @@ describe.only('Bookmarks Endpoints', () => {
           .insert(testBookmarks);
       });
 
-      it('GET /bookmarks/:id responds with 404 if bookmark not found', () => {
+      it('GET /api/bookmarks/:id responds with 404 if bookmark not found', () => {
         return supertest(app)
-          .get(`/bookmarks/${badTestParam.id}`)
+          .get(`/api/bookmarks/${badTestParam.id}`)
           .auth(apiToken, { type: 'bearer' })
           .expect(404, { error: { message: 'Bookmark doesn\'t exist' } });
       });
 
-      it('GET /bookmarks/:id responds with 200 if bookmark found', () => {
+      it('GET /api/bookmarks/:id responds with 200 if bookmark found', () => {
         return supertest(app)
-          .get(`/bookmarks/${testParam.id}`)
+          .get(`/api/bookmarks/${testParam.id}`)
           .auth(apiToken, { type: 'bearer' })
           .expect(200);
       });
     });
   });
 
-  describe('POST /bookmarks', () => {
-    it('POST /bookmarks/ responds with 201 and bookmark if created', () => {
+  describe('POST /api/bookmarks', () => {
+    it('POST /api/bookmarks/ responds with 201 and bookmark if created', () => {
 
       return supertest(app)
-        .post('/bookmarks')
+        .post('/api/bookmarks')
         .auth(apiToken, { type: 'bearer' })
         .send(testParam)
         .expect(201)
@@ -115,7 +115,7 @@ describe.only('Bookmarks Endpoints', () => {
         })
         .then(postRes =>
           supertest(app)
-            .get(`/bookmarks/${postRes.body.id}`)
+            .get(`/api/bookmarks/${postRes.body.id}`)
             .auth(apiToken, { type: 'bearer' })
             .expect(postRes.body)
         );
@@ -126,11 +126,11 @@ describe.only('Bookmarks Endpoints', () => {
       const { title, url, description, rating } = testParam;
       const newBookmark = { title, url, description, rating };
 
-      it(`POST /bookmarks/ responds with 400 and message when missing ${field} `, () => {
+      it(`POST /api/bookmarks/ responds with 400 and message when missing ${field} `, () => {
         delete newBookmark[field];
 
         return supertest(app)
-          .post('/bookmarks')
+          .post('/api/bookmarks')
           .auth(apiToken, { type: 'bearer' })
           .send(newBookmark)
           .expect(400, {
@@ -145,11 +145,11 @@ describe.only('Bookmarks Endpoints', () => {
   });
 
 
-  describe('DELETE /bookmarks', () => {
+  describe('DELETE /api/bookmarks', () => {
     context('Given no bookmarks', () => {
-      it('DELETE /bookmarks/:id responds with 404 and message if bookmark is not found', () => {
+      it('DELETE /api/bookmarks/:id responds with 404 and message if bookmark is not found', () => {
         return supertest(app)
-          .delete(`/bookmarks/${badTestParam.id}`)
+          .delete(`/api/bookmarks/${badTestParam.id}`)
           .auth(apiToken, { type: 'bearer' })
           .expect(404, { error: { message: 'Bookmark doesn\'t exist' } });
       });
@@ -163,29 +163,39 @@ describe.only('Bookmarks Endpoints', () => {
           .insert(testDatabase);
       });
 
-      it('DELETE /bookmarks/:id responds with 204 if bookmark successfully deleted', () => {
+      it('DELETE /api/bookmarks/:id responds with 204 if bookmark successfully deleted', () => {
         const expectedBookmarks = testDatabase.filter(bookmark => bookmark.id !== testParam.id);
         return supertest(app)
-          .delete(`/bookmarks/${testParam.id}`)
+          .delete(`/api/bookmarks/${testParam.id}`)
           .auth(apiToken, { type: 'bearer' })
           .expect(204)
           .then(res => supertest(app)
-            .get('/bookmarks')
+            .get('/api/bookmarks')
             .auth(apiToken, { type: 'bearer' })
             .expect(expectedBookmarks)
           );
       });
-      it('DELETE /bookmarks/:id responds with 404 and message if bookmark is not found', () => {
+      it('DELETE /api/bookmarks/:id responds with 404 and message if bookmark is not found', () => {
         return supertest(app)
-          .delete(`/bookmarks/${badTestParam.id}`)
+          .delete(`/api/bookmarks/${badTestParam.id}`)
           .auth(apiToken, { type: 'bearer' })
           .expect(404, { error: { message: 'Bookmark doesn\'t exist' } });
       });
     });
   });
 
+  describe.skip('PATCH /api/bookmarks/:id', () => {
+    context('Given no bookmarks', () => {
+      it('responds with 404', () => {
+        const articleId = 123456;
+        return supertest(app)
+          .patch(`/api/bookmarks/${articleId}`)
+          .expect(404, { error: { message: 'Article doesn\'t exist' } });
+      });
+    });
+    
+  });
 
 
-  //TODO fix delete test
 
 });
