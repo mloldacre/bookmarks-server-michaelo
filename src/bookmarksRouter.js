@@ -84,6 +84,9 @@ bookmarksRouter
       }).catch(next);
 
     logger.info(`Log: Bookmark with id ${req.params.id} deleted.`);
+  })
+  .patch((req, res) => {
+    res.status(204).end();
   });
 
 module.exports = bookmarksRouter;

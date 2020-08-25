@@ -37,6 +37,13 @@ function makeBookmarks() {
       description: 'This used to be a bookstore',
       rating: 5
     },
+    {
+      id: 6,
+      title: 'Test Database Bookmark ',
+      url: 'https://www.Testing.com',
+      description: 'Used for testing',
+      rating: 5
+    },
   ];
 }
 
@@ -48,6 +55,13 @@ const testParam = {
   'rating': 1
 };
 
+const updateBookmark = {
+  title: 'updated bookmark title',
+  url: 'Interview',
+  description: 'updated bookmark content',
+  rating: 4
+};
+
 const badTestParam = {
   'id': 10,
   'url': 'www.bad.com',
@@ -55,4 +69,4 @@ const badTestParam = {
   'rating': 1
 };
 
-module.exports = { makeBookmarks, testParam, badTestParam };
+module.exports = { makeBookmarks, testParam, badTestParam, updateBookmark };

@@ -3,7 +3,7 @@ const app = require('../src/app');
 const supertest = require('supertest');
 const knex = require('knex');
 const apiToken = process.env.API_TOKEN;
-const { makeBookmarks, testParam, badTestParam } = require('./bookmarks.fixtures');
+const { makeBookmarks, testParam, badTestParam, updateBookmark } = require('./bookmarks.fixtures');
 const { expect } = require('chai');
 
 
@@ -184,18 +184,36 @@ describe.only('Bookmarks Endpoints', () => {
     });
   });
 
-  describe.skip('PATCH /api/bookmarks/:id', () => {
+  describe.only('PATCH /api/bookmarks/:id', () => {
     context('Given no bookmarks', () => {
       it('responds with 404', () => {
-        const articleId = 123456;
+
         return supertest(app)
-          .patch(`/api/bookmarks/${articleId}`)
-          .expect(404, { error: { message: 'Article doesn\'t exist' } });
+          .patch(`/api/bookmarks/${badTestParam.id}`)
+          .auth(apiToken, { type: 'bearer' })
+          .expect(404, { error: { message: 'Bookmark doesn\'t exist' } });
       });
     });
-    
+
+    context.only('Given there are bookmarks in the database', () => {
+      const testDatabase = makeBookmarks();
+
+      beforeEach('insert bookmarks', () => {
+        return db
+          .into('bookmarks')
+          .insert(testDatabase);
+      });
+
+      it('responds with 204 and updates the bookmark', () => {
+        const idToUpdate = 6;
+        return supertest(app)
+          .patch(`/api/bookmarks/${idToUpdate}`)
+          .auth(apiToken, { type: 'bearer' })
+          .send(updateBookmark)
+          .expect(204);
+      });
+    });
+
   });
-
-
-
 });
+
