@@ -180,7 +180,7 @@ describe.only('Bookmarks Endpoints', () => {
       });
     });
   });
-  //TODO Start work on testing for PATCH endpoint
+
   describe('PATCH /api/bookmarks/:id', () => {
     context('Given no bookmarks', () => {
       it('responds with 404', () => {
